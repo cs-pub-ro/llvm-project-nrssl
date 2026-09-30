@@ -4,7 +4,7 @@
  *==========================================================================
  */
 
-def NRSSL_OPC : RISCVOpcode<"NRSSL", 0b0001011>;
+def NRSSL_OPC : RISCVOpcode<"NRSSL", 0b0101011>;
 
 class NRSSLInstrBinary<bits<7> op, bits<3> nrs_id, RegisterClass rc_out, list<RegisterClass> rc_ins, string int_str, string opstr> :
     RVInstR< 
