@@ -53,29 +53,32 @@ class NRSSLInstrUnary<bits<7> op, bits<3> nrs_id, RegisterClass rc_out, Register
   let hasSideEffects = 0;
 }
 
-multiclass NRSSLOpGroup<bits<3> nrs_id, string int_prefix_str> {
-  def _ADD : NRSSLInstrBinary<0b0000000, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_add", "fadd">;
-  def _SUB : NRSSLInstrBinary<0b0000001, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sub", "fsub">;
-  def _MUL : NRSSLInstrBinary<0b0000010, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_mul", "fmul">;
-  def _DIV : NRSSLInstrBinary<0b0000011, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_div", "fdiv">;
-  def _EQ : NRSSLInstrBinary<0b0000101, nrs_id, GPR, [FPR32, FPR32], int_prefix_str # "_eq", "feq">;
-  def _LT : NRSSLInstrBinary<0b0000110, nrs_id, GPR, [FPR32, FPR32], int_prefix_str # "_lt", "flt">;
-  def _LE : NRSSLInstrBinary<0b0000111, nrs_id, GPR, [FPR32, FPR32], int_prefix_str # "_le", "fle">;
-  def _MIN : NRSSLInstrBinary<0b0001000, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_min", "fmin">;
-  def _MAX : NRSSLInstrBinary<0b0001001, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_max", "fmax">;
-  def _SGNJ : NRSSLInstrBinary<0b0001010, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sgnj", "sgnj">;
-  def _SGNJN : NRSSLInstrBinary<0b0001011, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sgnjn", "sgnjn">;
-  def _SGNJX : NRSSLInstrBinary<0b0001100, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sgnjx", "sgnjx">;
+// The mnemonics are nrs.<format>.<op>, <op> being the standard RISC-V name
+// without the .s suffix. They have to differ per format, otherwise assembly
+// can't tell the formats apart.
+multiclass NRSSLOpGroup<bits<3> nrs_id, string int_prefix_str, string mn> {
+  def _ADD : NRSSLInstrBinary<0b0000000, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_add", mn # "fadd">;
+  def _SUB : NRSSLInstrBinary<0b0000001, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sub", mn # "fsub">;
+  def _MUL : NRSSLInstrBinary<0b0000010, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_mul", mn # "fmul">;
+  def _DIV : NRSSLInstrBinary<0b0000011, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_div", mn # "fdiv">;
+  def _EQ : NRSSLInstrBinary<0b0000101, nrs_id, GPR, [FPR32, FPR32], int_prefix_str # "_eq", mn # "feq">;
+  def _LT : NRSSLInstrBinary<0b0000110, nrs_id, GPR, [FPR32, FPR32], int_prefix_str # "_lt", mn # "flt">;
+  def _LE : NRSSLInstrBinary<0b0000111, nrs_id, GPR, [FPR32, FPR32], int_prefix_str # "_le", mn # "fle">;
+  def _MIN : NRSSLInstrBinary<0b0001000, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_min", mn # "fmin">;
+  def _MAX : NRSSLInstrBinary<0b0001001, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_max", mn # "fmax">;
+  def _SGNJ : NRSSLInstrBinary<0b0001010, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sgnj", mn # "fsgnj">;
+  def _SGNJN : NRSSLInstrBinary<0b0001011, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sgnjn", mn # "fsgnjn">;
+  def _SGNJX : NRSSLInstrBinary<0b0001100, nrs_id, FPR32, [FPR32, FPR32], int_prefix_str # "_sgnjx", mn # "fsgnjx">;
 
-  def _SQRT : NRSSLInstrUnary<0b0000100, nrs_id, FPR32, FPR32, int_prefix_str # "_sqrt", "fsqrt">;
+  def _SQRT : NRSSLInstrUnary<0b0000100, nrs_id, FPR32, FPR32, int_prefix_str # "_sqrt", mn # "fsqrt">;
 
   let IsSignExtendingOpW = 1 in
-    def _CVT_TO_INT: NRSSLInstrUnary<0b0001101, nrs_id, GPR, FPR32, int_prefix_str # "_cvtToInt", "cvtToInt">;
+    def _CVT_TO_INT: NRSSLInstrUnary<0b0001101, nrs_id, GPR, FPR32, int_prefix_str # "_cvtToInt", mn # "fcvt.w">;
   let IsSignExtendingOpW = 1 in
-    def _CVT_TO_UINT: NRSSLInstrUnary<0b0001101, nrs_id, GPR, FPR32, int_prefix_str # "_cvtToUInt", "cvtToUInt", 0b00001>;
+    def _CVT_TO_UINT: NRSSLInstrUnary<0b0001101, nrs_id, GPR, FPR32, int_prefix_str # "_cvtToUInt", mn # "fcvt.wu", 0b00001>;
 
-  def _CVT_FROM_INT : NRSSLInstrUnary<0b0001110, nrs_id, FPR32, GPR, int_prefix_str # "_cvtFromInt", "cvtFromInt">;
-  def _CVT_FROM_UINT : NRSSLInstrUnary<0b0001110, nrs_id, FPR32, GPR, int_prefix_str # "_cvtFromUInt", "cvtFromUInt", 0b00001>;
+  def _CVT_FROM_INT : NRSSLInstrUnary<0b0001110, nrs_id, FPR32, GPR, int_prefix_str # "_cvtFromInt", mn # "fcvt.s.w">;
+  def _CVT_FROM_UINT : NRSSLInstrUnary<0b0001110, nrs_id, FPR32, GPR, int_prefix_str # "_cvtFromUInt", mn # "fcvt.s.wu", 0b00001>;
 }
 
 class NRSSL_NRS<bits<3> id_, string int_name_> {
@@ -102,5 +105,5 @@ defvar nrssl_nrs = [
 
 foreach nrs = nrssl_nrs in {
   defvar int_prefix_str = "int_riscv_nrssl_f32_" # nrs.int_name;
-  defm NRSSL_F32_ # nrs.name : NRSSLOpGroup<nrs.id, int_prefix_str>;
+  defm NRSSL_F32_ # nrs.name : NRSSLOpGroup<nrs.id, int_prefix_str, "nrs." # !tolower(nrs.int_name) # ".">;
 }
