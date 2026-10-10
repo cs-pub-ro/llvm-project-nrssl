@@ -1,0 +1,29 @@
+{
+  "version": 8,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 28
+  },
+  "configurePresets": [
+    {
+      "name": "nrs-preset",
+      "displayName": "NRS Preset",
+      "description": "Preset for building necessary LLVM tools for NRS testing",
+      "generator": "Ninja",
+      "binaryDir": "${sourceParentDir}/build/nrs",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
+        "LLVM_ENABLE_PROJECTS": "clang;lld",
+        "LLVM_TARGETS_TO_BUILD": "X86;RISCV",
+        "LLVM_APPEND_VC_REV": "OFF",
+        "LLVM_ENABLE_BINDINGS": "OFF",
+        "LLVM_USE_LINKER": "lld",
+        "LLVM_CCACHE_BUILD": "ON",
+        "LLVM_INCLUDE_BENCHMARKS": "OFF",
+        "LLVM_INCLUDE_EXAMPLES": "OFF",
+        "LLVM_ENABLE_ASSERTIONS": "ON"
+      }
+    }
+  ]
+
+}
