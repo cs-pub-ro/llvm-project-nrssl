@@ -4,9 +4,12 @@
  *==========================================================================
  */
 
-class NRSSL_F32_Int_Binary<LLVMType ret_ty, list<LLVMType> arg_tys>: 
+// Only add, mul, min, max and eq are commutative: sub, div, lt, le and the
+// sign injections are not, and marking them would let optimizations swap
+// their operands.
+class NRSSL_F32_Int_Binary<LLVMType ret_ty, list<LLVMType> arg_tys, list<IntrinsicProperty> props = []>:
     Intrinsic<[ret_ty], arg_tys,
-              [IntrNoMem, Commutative, IntrSpeculatable]>;
+              !listconcat([IntrNoMem, IntrSpeculatable], props)>;
 
 class NRSSL_F32_Int_Unary<LLVMType ret_ty, LLVMType arg_ty>: 
     Intrinsic<[ret_ty], [arg_ty], [IntrNoMem, IntrSpeculatable]>;
@@ -40,11 +43,14 @@ defvar nrssl_fcmp_ops = [
 
 foreach nrs_name = nrssl_nrs_names in {
     foreach op = nrssl_binary_ops in {
-        def int_riscv_nrssl_f32_ # nrs_name # _ # op : NRSSL_F32_Int_Binary<llvm_float_ty, [llvm_float_ty, llvm_float_ty]>;
+        defvar commutative = !or(!eq(op, "add"), !eq(op, "mul"), !eq(op, "min"), !eq(op, "max"));
+        def int_riscv_nrssl_f32_ # nrs_name # _ # op : NRSSL_F32_Int_Binary<llvm_float_ty, [llvm_float_ty, llvm_float_ty],
+                                                                            !if(commutative, [Commutative], [])>;
     }
 
     foreach fcmp_op = nrssl_fcmp_ops in {
-        def int_riscv_nrssl_f32_ # nrs_name # _ # fcmp_op : NRSSL_F32_Int_Binary<llvm_i64_ty, [llvm_float_ty, llvm_float_ty]>;
+        def int_riscv_nrssl_f32_ # nrs_name # _ # fcmp_op : NRSSL_F32_Int_Binary<llvm_i64_ty, [llvm_float_ty, llvm_float_ty],
+                                                                                 !if(!eq(fcmp_op, "eq"), [Commutative], [])>;
     }
 
     def int_riscv_nrssl_f32_ # nrs_name # _sqrt : NRSSL_F32_Int_Unary<llvm_float_ty, llvm_float_ty>;
